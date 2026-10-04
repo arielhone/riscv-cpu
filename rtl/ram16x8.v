@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 module ram16x8 (
     input  wire       clk, we,
     input  wire [3:0] addr,

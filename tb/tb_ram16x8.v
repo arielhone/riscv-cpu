@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 module tb_ram16x8;
     reg clk = 0;
     always #5 clk = ~clk;
