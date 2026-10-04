@@ -15,7 +15,7 @@ module tb_ram16x8;
     initial begin
         $dumpfile("dump.vcd");
         $dumpvars(0, tb_ram16x8);
-        $monitor("t=%0t we=%b addr=%h wdata=%h -> rdata=%h",
+        $monitor("t=%0d we=%b addr=%h wdata=%h -> rdata=%h",
                  $time, we, addr, wdata, rdata);
 
         we = 0; addr = 4'h0; wdata = 8'h00;
