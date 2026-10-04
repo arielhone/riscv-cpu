@@ -1,14 +1,12 @@
 `timescale 1ns / 1ps
 module tb_ram16x8;
-    reg clk = 0;
+    logic clk = 0;
     always #5 clk = ~clk;
 
-    reg        we;
-    reg  [3:0] addr;
-    reg  [7:0] wdata;
-    wire [7:0] rdata;
-
-    integer i;
+    logic     we;
+    logic [3:0] addr;
+    logic [7:0] wdata;
+    logic [7:0] rdata;
 
     ram16x8 dut (.clk(clk), .we(we), .addr(addr), .wdata(wdata), .rdata(rdata));
 
@@ -20,7 +18,7 @@ module tb_ram16x8;
 
         we = 0; addr = 4'h0; wdata = 8'h00;
 
-        for (i = 0; i < 4; i = i + 1) begin
+        for (int i = 0; i < 4; i++) begin
             @(negedge clk);
             addr = i;
         end
