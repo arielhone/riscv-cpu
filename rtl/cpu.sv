@@ -81,8 +81,29 @@ module cpu import alu_pkg::*, rv32i_pkg::*; #(
         .rs2_data (rs2_data)
     );
 
-
     // ---------- Execute ----------
-    // TODO: alu_src MUX, u_alu, wb_sel MUX (step 3)
+    logic [31:0] alu_a, alu_b;
+    logic [31:0] alu_out;
+    logic        alu_zero;
+
+    assign alu_a = rs1_data;
+    assign alu_b = alu_src ? imm : rs2_data;   // 0 = rs2, 1 = imm
+
+    alu u_alu (
+        .a      (alu_a),
+        .b      (alu_b),
+        .alu_op (alu_op),
+        .zero   (alu_zero),
+        .result (alu_out)
+    );
+
+    // ---------- Write-back ----------
+    always_comb begin
+        case (wb_sel)
+            2'd0:    rd_data = alu_out;    // R, I
+            2'd2:    rd_data = pc_plus4;   // JAL, JALR
+            default: rd_data = alu_out;    // 2'd1 = dmem, added in lesson 22
+        endcase
+    end
 
 endmodule
