@@ -108,11 +108,36 @@ module cpu import alu_pkg::*, rv32i_pkg::*; #(
         .rdata (dmem_rdata)
     );
     
+    // ---------- Load: pick the byte ----------
+    logic [7:0] ld_byte;
+
+    always_comb begin
+        case (alu_out[1:0])
+            2'b00:   ld_byte = dmem_rdata[7:0];
+            2'b01:   ld_byte = dmem_rdata[15:8];
+            2'b10:   ld_byte = dmem_rdata[23:16];
+            default: ld_byte = dmem_rdata[31:24]; // 2'b11
+        endcase
+    end
+
+    // ---------- Load: extend to 32 bits ----------
+    logic [31:0] ld_data;
+
+    always_comb begin
+        case (funct3)
+            3'b000:  ld_data = {{24{ld_byte[7]}}, ld_byte};  // LB
+            3'b010:  ld_data = dmem_rdata;                   // LW
+            3'b100:  ld_data = {{24{1'b0}}, ld_byte};        // LBU
+            default: ld_data = dmem_rdata;                   // LH/LHU added next
+        endcase
+    end
+
+
     // ---------- Write-back ----------
     always_comb begin
         case (wb_sel)
             2'd0:    rd_data = alu_out;    // R, I
-            2'd1:    rd_data = dmem_rdata; // loads
+            2'd1:    rd_data = ld_data; // loads
             2'd2:    rd_data = pc_plus4;   // JAL, JALR
             default: rd_data = alu_out;    // 2'd3 unused
         endcase
