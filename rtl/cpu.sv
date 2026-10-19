@@ -97,14 +97,37 @@ module cpu import alu_pkg::*, rv32i_pkg::*; #(
         .result (alu_out)
     );
 
+    // ---------- Store: replicate data to every lane ----------
+    logic [31:0] st_data;
+
+    always_comb begin
+        case (funct3)
+            3'b000:  st_data = {4{rs2_data[7:0]}};   // SB
+            3'b001:  st_data = {2{rs2_data[15:0]}};   // SH
+            default: st_data = rs2_data;                  // SW
+        endcase
+    end
+
+
+    // ---------- Store: byte enables ----------
+    logic [3:0] st_be;
+
+    always_comb begin
+        case (funct3)
+            3'b000:  st_be = 4'b0001 << alu_out[1:0];            // SB
+            3'b001:  st_be = alu_out[1] ? 4'b1100 : 4'b0011;     // SH
+            default: st_be = 4'b1111;                            // SW
+        endcase
+    end
+
     logic [31:0] dmem_rdata;
 
     dmem u_dmem (
         .clk   (clk),
         .we    (mem_we),
-        .be    (4'b1111),
+        .be (st_be),
         .addr  (alu_out),
-        .wdata (rs2_data),
+        .wdata (st_data),
         .rdata (dmem_rdata)
     );
     
