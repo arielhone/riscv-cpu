@@ -120,6 +120,12 @@ module cpu import alu_pkg::*, rv32i_pkg::*; #(
         endcase
     end
 
+    // ---------- Load: pick the halfword ----------
+    logic [15:0] ld_half;
+
+    assign ld_half = alu_out[1] ? dmem_rdata[31:16] : dmem_rdata[15:0];
+
+
     // ---------- Load: extend to 32 bits ----------
     logic [31:0] ld_data;
 
@@ -128,9 +134,12 @@ module cpu import alu_pkg::*, rv32i_pkg::*; #(
             3'b000:  ld_data = {{24{ld_byte[7]}}, ld_byte};  // LB
             3'b010:  ld_data = dmem_rdata;                   // LW
             3'b100:  ld_data = {{24{1'b0}}, ld_byte};        // LBU
-            default: ld_data = dmem_rdata;                   // LH/LHU added next
+            3'b001:  ld_data = {{16{ld_half[15]}}, ld_half};  // LH
+            3'b101:  ld_data = {{16{1'b0}}, ld_half};         // LHU
+            default: ld_data = dmem_rdata;
         endcase
     end
+
 
 
     // ---------- Write-back ----------
