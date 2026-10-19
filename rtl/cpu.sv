@@ -97,12 +97,24 @@ module cpu import alu_pkg::*, rv32i_pkg::*; #(
         .result (alu_out)
     );
 
+    logic [31:0] dmem_rdata;
+
+    dmem u_dmem (
+        .clk   (clk),
+        .we    (mem_we),
+        .be    (4'b1111),
+        .addr  (alu_out),
+        .wdata (rs2_data),
+        .rdata (dmem_rdata)
+    );
+    
     // ---------- Write-back ----------
     always_comb begin
         case (wb_sel)
             2'd0:    rd_data = alu_out;    // R, I
+            2'd1:    rd_data = dmem_rdata; // loads
             2'd2:    rd_data = pc_plus4;   // JAL, JALR
-            default: rd_data = alu_out;    // 2'd1 = dmem, added in lesson 22
+            default: rd_data = alu_out;    // 2'd3 unused
         endcase
     end
 
