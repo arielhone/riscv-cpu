@@ -24,7 +24,6 @@ module cpu import alu_pkg::*, rv32i_pkg::*; #(
     );
 
     assign pc_plus4 = pc_cur + 32'd4;
-    assign pc_next  = pc_plus4;   // no jumps yet (lesson 23)
 
     // ---------- Decode ----------
     // Instruction fields
@@ -96,6 +95,27 @@ module cpu import alu_pkg::*, rv32i_pkg::*; #(
         .zero   (alu_zero),
         .result (alu_out)
     );
+
+    // ---------- Branch / jump target ----------
+    logic [31:0] pc_target;
+
+    assign pc_target = pc_cur + imm;
+
+    // ---------- Branch decision ----------
+    logic take_branch;
+
+    assign take_branch = branch & (funct3[0] ? ~alu_zero : alu_zero);
+
+    
+
+    // ---------- Next PC ----------
+    always_comb begin
+        case ({jalr, jump | take_branch})
+            2'b10:   pc_next = {alu_out[31:1], 1'b0};   // JALR: rs1 + imm, bit 0 cleared
+            2'b01:   pc_next = pc_target;   // JAL, taken branch: pc + imm
+            default: pc_next = pc_plus4;   // everything else: pc + 4
+        endcase
+    end
 
     // ---------- Store: replicate data to every lane ----------
     logic [31:0] st_data;
