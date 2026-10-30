@@ -1,0 +1,7 @@
+00500513  // 0x00  ADDI x10, x0, 5
+010000EF  // 0x04  JAL x1, func
+00050613  // 0x08  ADDI x12, x10, 0
+0000006F  // 0x0C  done: JAL x0, done
+06300693  // 0x10  ADDI x13, x0, 99
+00A50533  // 0x14  func: ADD x10, x10, x10
+00008067  // 0x18  JALR x0, 0(x1)
